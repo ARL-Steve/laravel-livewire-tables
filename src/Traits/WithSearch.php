@@ -34,12 +34,13 @@ trait WithSearch
             }
 
             if ($searchableColumns->count()) {
-                $this->setBuilder($this->getBuilder()->where(function ($query) use ($searchableColumns, $search) {
+                $likeOperator = $this->getBuilder()->getConnection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+                $this->setBuilder($this->getBuilder()->where(function ($query) use ($likeOperator, $searchableColumns, $search) {
                     foreach ($searchableColumns as $index => $column) {
                         if ($column->hasSearchCallback()) {
                             ($column->getSearchCallback())($query, $search);
                         } else {
-                            $query->{$index === 0 ? 'where' : 'orWhere'}($column->getColumn(), 'like', '%'.$search.'%');
+                            $query->{$index === 0 ? 'where' : 'orWhere'}($column->getColumn(), $likeOperator, '%'.$search.'%');
                         }
                     }
                 }));
