@@ -7,8 +7,6 @@ use Illuminate\Contracts\Console\PromptsForMissingInput;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
-use Livewire\Features\SupportConsoleCommands\Commands\ComponentParser;
-use Livewire\Features\SupportConsoleCommands\Commands\MakeCommand as LivewireMakeCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Finder\Finder;
@@ -21,7 +19,7 @@ use function Laravel\Prompts\text;
  */
 class MakeCommand extends Command implements PromptsForMissingInput
 {
-    protected ComponentParser $parser;
+    protected ComponentParserHelper $parser;
 
     /**
      * @var string
@@ -56,15 +54,13 @@ class MakeCommand extends Command implements PromptsForMissingInput
      */
     public function handle(): void
     {
-        $this->parser = new ComponentParser(
+        $this->parser = new ComponentParserHelper(
             config('livewire.class_namespace'),
             config('livewire.view_path'),
             $this->argument('name')
         );
 
-        $livewireMakeCommand = new LivewireMakeCommand;
-
-        if ($livewireMakeCommand->isReservedClassName($name = $this->parser->className())) {
+        if (ComponentParserHelper::isReservedClassName($name = $this->parser->className())) {
             $this->line("<fg=red;options=bold>Class is reserved:</> {$name}");
 
             return;
